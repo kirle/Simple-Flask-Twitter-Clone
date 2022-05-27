@@ -1,0 +1,225 @@
+{% extends "base_layout.html" %}
+
+{%block title%} Twitter {%endblock%}
+{%block customCSS%}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css' ) }}" >
+{%endblock%}
+{%block body%}
+<!-- BOOSTRAP-->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css" integrity="sha256-46r060N2LrChLLb5zowXQ72/iKKNiw/lAmygmHExk/o=" crossorigin="anonymous" />
+
+<div class="container">
+      <!-- Inner main body -->
+      <div class="text-muted small text-center align-self-center">
+        <h1> Welcome: {{current_user.username}} 
+            <a id="url" href="{{ url_for('profile') }}"> (Edit profile) </a>
+
+           </h1> 
+        </div>
+        
+
+
+        <!-- Forum List -->
+        <div class="inner-main-body p-2 p-sm-3 collapse forum-content show">
+        <!--Write new tweet-->
+        <form name="frmTweet" action="/tweet" method="post" >
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}"> 
+            <input type="hidden" name="replies_to" value="{{None}}"> 
+
+            <label for="POST-name" class="d-flex justify-content-center">Escribe algo:</label>
+            <input type="text" id = "inputText" name="inputText" class="form-control" placeholder="Texto"/>
+            <button type="submit" onclick="return validateTweet();return false" class="btn btn-primary form-control form-control-sm bg-gray-200 border-gray-200 shadow-none mb-4 mt-4" value="Save">Tweet</button>
+        </form>
+        <!--/Write new tweet-->
+        
+<div class="main-body p-0">
+    <div class="inner-wrapper">
+    
+        <!-- Inner main -->
+        <div class="inner-main">
+        
+    
+            <div class="container vertical-scrollable overflow-auto">
+            {% if data %}
+                {% for tweet in data %}
+                <!--Tweet-->
+
+                <div class="card mb-2">
+                    
+                    <div class="card-body p-2 p-sm-3">                      
+                        <div class="media forum-item">
+                            {% if tweet.5 is not none %} 
+                            <a href="#" data-toggle="collapse" data-target=".forum-content"><img src="{{ url_for('static', filename='uploads/' + tweet.5) }}" class="mr-3 rounded-circle" width="50" alt="" /></a>
+
+                            {%else%}
+                            <a href="#" data-toggle="collapse" data-target=".forum-content"><img src="https://cdn-icons-png.flaticon.com/512/10/10938.png" class="mr-3 rounded-circle" width="50" alt="" /></a>
+
+                            {%endif%}
+
+                            {% if tweet.3 is not none %} 
+                            <p class="text-muted"> <span class="text-secondary font-weight-bold">(Respondiendo a otro tweet)</span></p>
+                            </div>
+                            {%endif%}  </td>
+                            
+                            <div class="media-body">  
+                                <p class="text-secondary">
+                                    {{ tweet.1 }}   
+                                                             </p>
+                                <p class="text-muted">
+                                    {% if tweet.2 == current_user.id %}
+
+                                    <a href="javascript:window.location.href='{{url_for('profile')}}';">{{tweet.4}}</a> says <span class="text-secondary font-weight-bold">{{tweet.6}}</span></p>
+                                    {%else%}
+                                    {{tweet.4}} says <span class="text-secondary font-weight-bold">{{tweet.6}}</span></p>
+                                    {%endif%}
+                                </div>
+
+    
+                            <div class="text-muted small text-center align-self-center">
+                                
+                            <!--Ver repuestas-->
+                            <form id="answersForm" class="d-none d-sm-inline-block" action="{{ url_for('tweet_reply') }}" method="GET">
+                                <input type="hidden"  name="csrf_token" value="{{csrf_token()}}"> 
+                                <input type="hidden"  name="tweet_id" value="{{tweet.0}}">  
+                                <input type="hidden"  name="tweet_text" value="{{tweet.1}}">  
+                                <input type="hidden"  name="tweet_author" value="{{tweet.4}}">  
+                                <button type="submit" name="submit" class="fabutton">
+                                    <i class="far fa-comment ml-2"> <!--Num comentarios --> </i>
+                                </button>
+                            </form> {{tweet.8}}
+                            <!--/Ver respuestas-->
+
+                            <!--Likes-->
+                            {% if current_user.hasLikedTweet(tweet.0) %}
+                            <form id="likeForm" class="d-none d-sm-inline-block" action="{{ url_for('like_action') }}" method="POST">
+                                <input type="hidden"  name="csrf_token" value="{{csrf_token()}}"> 
+                                <input type="hidden"  name="tweet_id" value="{{tweet.0}}">       
+                                <input type="hidden"  name="__action" value="UNLIKE">       
+                                <button type="submit" name="submit" class="fabutton">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                             
+                            </form>
+                            {%else%}
+                            <form id="likeForm" class="d-none d-sm-inline-block" action="{{ url_for('like_action') }}" method="POST">
+                                <input type="hidden"  name="csrf_token" value="{{csrf_token()}}"> 
+                                <input type="hidden"  name="tweet_id" value="{{tweet.0}}">       
+                                <input type="hidden"  name="__action" value="LIKE">       
+                                <button type="submit" name="submit" class="fabutton">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </form>
+                            
+
+                            {%endif%}{{tweet.7}}
+                          
+                            <!--CRUD Twewets-->
+
+                            {% if tweet.2 == current_user.id %}
+                            
+                                <form id="deleteForm" class="d-none d-sm-inline-block" action="{{ url_for('tweet') }}" method="GET">
+                                    <input type="hidden"  name="csrf_token" value="{{csrf_token()}}">  
+                                    <input type="hidden" name ="_method" value="DELETE" >
+                                    <input type="hidden"  name="tweet_id" value="{{tweet.0}}">  
+                                    <button type="submit" name="submit" class="fabutton">
+                                        <i class="far fa-trash-alt"> Eliminar</i>
+                                    </button>  
+                                </form>
+                                
+                                
+                            
+                            
+                                <form id="editForm" class="d-none d-sm-inline-block" action="{{ url_for('editTweet') }}" method="GET">
+                                    <input type="hidden"  name="csrf_token" value="{{csrf_token()}}">  
+                                    <input type="hidden"  name="tweet_id" value="{{tweet.0}}">  
+                                    <input type="hidden"  name="tweet_text" value="{{tweet.1}}">  
+        
+                                    <button type="submit" name="submit" class="fabutton">
+                                        <i class="far fa-edit"> Editar</i>
+                                    </button>  
+                                </form>
+                                
+                            {%endif%}
+                            <!--/ CRUD Twewets-->
+
+                            
+                            </div>
+                       
+
+                    </div>
+                </div>
+            <!--Tweet-->
+
+                {%endfor%}
+            {%else%}
+                <p>No tweets  </p>
+            {%endif%}
+        </div>
+    </div>
+
+            <!-- /Forum List -->
+
+ 
+                
+                 <!-- /Inner main body -->
+    </div>
+   <!--logout-->
+   <div class="card mb-2">
+    
+    <div class="card-body p-2 p-sm-3">
+        
+            <a class="btn btn-secondary d-flex justify-content-center" href="{{ url_for('logout') }}"> Logout </a>
+
+    </div></div>   
+</div>
+
+    <!-- New Thread Modal -->
+    <div class="modal fade" id="threadModal" tabindex="-1" role="dialog" aria-labelledby="threadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form>
+                    <div class="modal-header d-flex align-items-center bg-primary text-white">
+                        <h6 class="modal-title mb-0" id="threadModalLabel">New Discussion</h6>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="threadTitle">Title</label>
+                            <input type="text" class="form-control" id="threadTitle" placeholder="Enter title" autofocus="" />
+                        </div>
+                        <textarea class="form-control summernote" style="display: none;"></textarea>
+
+                        <div class="custom-file form-control-sm mt-3" style="max-width: 300px;">
+                            <input type="file" class="custom-file-input" id="customFile" multiple="" />
+                            <label class="custom-file-label" for="customFile">Attachment</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        
+                        <button type="button" class="btn btn-light" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+</div>
+
+
+<!-- BOOSTRAP end-->
+
+{% with msgs = get_flashed_messages() %}
+{% if msgs %}
+    {% for msg in msgs %}
+        <p> {{msg}}</p>
+    {%endfor%}
+{%endif%}
+{%endwith%}
+
+
+{%endblock%}
+

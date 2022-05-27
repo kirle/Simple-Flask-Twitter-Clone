@@ -1,0 +1,10 @@
+<form name="frmEditTweet" action="/tweet" method="GET" >
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">  
+    <input type="hidden"  name="tweet_id" value="{{data.0}}">  
+    <input type="hidden" name ="_method" value="PUT" >
+
+    <label for="Edit tweet">Editar tweet:</label>
+    <input type="text" name="tweet_text" placeholder="Editar tweet" 
+        value="{{data.1}}" />
+    <input type="submit" value="Ssave">
+</form>
